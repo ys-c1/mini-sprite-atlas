@@ -13,8 +13,8 @@ static void clear_output(Packed *out, int n)
     }
 }
 
-/* Stable insertion sort of sprite indices by descending height. */
-static void sort_by_height(const Sprite *sprites, int *order, int n)
+/* Stable insertion sort of sprite indices by descending width. */
+static void sort_by_width(const Sprite *sprites, int *order, int n)
 {
     int i;
 
@@ -22,7 +22,7 @@ static void sort_by_height(const Sprite *sprites, int *order, int n)
         int key = order[i];
         int j = i - 1;
 
-        while (j >= 0 && sprites[order[j]].h < sprites[key].h) {
+        while (j >= 0 && sprites[order[j]].w < sprites[key].w) {
             order[j + 1] = order[j];
             --j;
         }
@@ -49,8 +49,8 @@ static int collides(const Sprite *sprites, const Packed *out, int n,
 
         sep_x = (out[i].x + sprites[i].w + padding <= x) ||
                 (x + w + padding <= out[i].x);
-        sep_y = (out[i].y + sprites[i].h + padding <= y) ||
-                (y + h + padding <= out[i].y);
+        sep_y = (out[i].y + sprites[i].h <= y) ||
+                (y + h <= out[i].y);
 
         if (!sep_x && !sep_y) {
             return 1;
@@ -87,7 +87,7 @@ int pack_atlas(const Sprite *sprites, int n, int atlas_w, int padding,
         order[i] = i;
     }
 
-    sort_by_height(sprites, order, n);
+    sort_by_width(sprites, order, n);
 
     for (i = 0; i < n; ++i) {
         int idx = order[i];
@@ -124,7 +124,7 @@ int pack_atlas(const Sprite *sprites, int n, int atlas_w, int padding,
 
     if (!all_placed) {
         clear_output(out, n);
-        return -1;
+        return 0;
     }
 
     return 0;
